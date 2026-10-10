@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v7
       - run: docker build -t mqtt-kafka-collector:integration .
       - run: python3 tests/integration/run.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-logs
