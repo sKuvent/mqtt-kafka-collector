@@ -1,0 +1,18 @@
+services:
+  collector:
+    build: .
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    ports:
+      - "127.0.0.1:8080:8000"
+    # One instance / one stable client ID. Do not scale this service.
+    stop_grace_period: 35s
+    mem_limit: 384m
+    read_only: true
+    tmpfs:
+      - /tmp:rw,exec,size=64m,mode=1777
+    volumes:
+      - paho-state:/app/state
+volumes:
+  paho-state:

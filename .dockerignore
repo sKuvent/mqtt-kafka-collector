@@ -1,0 +1,6 @@
+.git
+.github
+target
+.env
+*.zip
+__pycache__

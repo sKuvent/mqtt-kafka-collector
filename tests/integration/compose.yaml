@@ -1,0 +1,59 @@
+services:
+  mqtt:
+    image: eclipse-mosquitto:2.0.22
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mqtt-data:/mosquitto/data
+    mem_limit: 128m
+  kafka:
+    image: apache/kafka:3.9.1
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    mem_limit: 1g
+  collector:
+    image: mqtt-kafka-collector:integration
+    read_only: true
+    user: '10001:10001'
+    tmpfs:
+      - /tmp:rw,exec,size=64m,mode=1777
+    volumes:
+      - collector-state:/app/state
+      - ./application.yaml:/config/application.yaml:ro
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+      MQTT_URI: tcp://mqtt:1883
+      MQTT_TOPIC: ${TEST_MQTT_TOPIC:-tests/#}
+      MQTT_CLIENT_ID: ${TEST_CLIENT_ID:-collector-integration}
+      MQTT_QOS0_POLICY: ${TEST_QOS0_POLICY:-best-effort}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: ${TEST_KAFKA_TOPIC:-test.raw}
+      KAFKA_PARTITIONING: ${TEST_PARTITIONING:-murmur2}
+      METRICS_PREFIX: test_collector
+      COLLECTOR_ROLE: integration
+      COLLECTOR_MAX_PENDING_MESSAGES: ${TEST_MAX_PENDING_MESSAGES:-10000}
+      COLLECTOR_MAX_PAYLOAD_BYTES: ${TEST_MAX_PAYLOAD_BYTES:-1048576}
+    mem_limit: 384m
+    stop_grace_period: 35s
+  probe:
+    build:
+      context: .
+      dockerfile: Probe.Dockerfile
+    command: [sleep, infinity]
+    mem_limit: 128m
+networks:
+  default:
+    internal: true
+volumes:
+  mqtt-data:
+  collector-state:

@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: mqtt-kafka-collector
+server:
+  port: ${SERVER_PORT:8000}
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,prometheus
+collector:
+  mqtt:
+    uri: ${MQTT_URI:tcp://${MQTT_HOST:localhost}:${MQTT_PORT:1883}}
+    client-id: ${MQTT_CLIENT_ID:mqtt-kafka-collector}
+    topic: ${MQTT_TOPIC:#}
+    tls: ${MQTT_TLS:false}
+    username: ${MQTT_USERNAME:}
+    password: ${MQTT_PASSWORD:}
+    qos: 1
+    qos0-policy: ${MQTT_QOS0_POLICY:best-effort}
+    persistence-directory: ${MQTT_PERSISTENCE_DIRECTORY:/app/state}
+    session-expiry-seconds: 86400
+    receive-maximum: 100
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    partitioning: ${KAFKA_PARTITIONING:murmur2}
+  max-pending-bytes: 16777216
+  max-pending-messages: 10000
+  max-payload-bytes: 1048576
+  shutdown-drain-seconds: 25
+  collector-role: ${COLLECTOR_ROLE:mqtt-kafka-collector}
+  metrics-prefix: ${METRICS_PREFIX:collector}
+  mapping:
+    default-topic: ${KAFKA_TOPIC:mqtt.raw.v1}
+    default-key: "{topic}"
+    rules: []
+
+info:
+  app:
+    name: mqtt-kafka-collector
+management.info.env.enabled: true

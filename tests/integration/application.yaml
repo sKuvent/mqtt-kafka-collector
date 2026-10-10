@@ -1,0 +1,12 @@
+collector:
+  kafka:
+    delivery-timeout-ms: 6000
+    properties:
+      '[request.timeout.ms]': '1000'
+      '[max.block.ms]': '2000'
+  shutdown-drain-seconds: 8
+  mapping:
+    rules:
+      - pattern: '^tests/(?<device>[^/]+)/events$'
+        kafka-topic: test.events
+        kafka-key: '{device}'
