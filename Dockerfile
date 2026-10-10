@@ -4,7 +4,7 @@ COPY pom.xml ./
 COPY src ./src
 RUN mvn -B -ntp verify
 
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /build/target/app.jar app.jar
 COPY LICENSE /app/LICENSE
