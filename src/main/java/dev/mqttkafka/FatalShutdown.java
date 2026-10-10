@@ -13,7 +13,12 @@ public class FatalShutdown {
     public void request() {
         Thread thread = new Thread(() -> {
             try { context.close(); }
-            finally { System.exit(1); }
+            finally {
+                // A fatal delivery error must be visible to the supervisor.  In
+                // particular, do not let Spring's context shutdown turn this
+                // path into a successful (exit code 0) termination.
+                Runtime.getRuntime().halt(1);
+            }
         }, "collector-fatal-exit");
         thread.start();
     }
