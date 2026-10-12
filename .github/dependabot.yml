@@ -4,6 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Spring Boot 4 changes the Actuator health API and requires a separate
+    # migration. Keep automatic updates on the tested Boot 3 line.
+    ignore:
+      - dependency-name: org.springframework.boot:spring-boot-starter-parent
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directory: /
     schedule:
